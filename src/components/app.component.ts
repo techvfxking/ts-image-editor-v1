@@ -1,3 +1,4 @@
+import { Button } from "./button.component";
 import { Label } from "./label.component";
 
 export class AppRoot {
