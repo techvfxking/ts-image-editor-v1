@@ -100,7 +100,7 @@ export class HelperService {
 
             return element;
         } catch (error: unknown) {
-            HelperService.logData(error, "Error");
+            this.logData(error, "Error");
             throw error;
         }
     }
