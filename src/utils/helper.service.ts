@@ -87,7 +87,7 @@ export class HelperService {
             return false;
     };
 
-    public static getNodeElements = (identifire: string, type: TQuerySelector, allowNull: boolean): TElementType => {
+    public static getNodeElements = (identifire: string, type: TQuerySelector, allowNull: boolean = false): TElementType => {
         try {
             let element: TElementType = undefined;
             if (type === "All")
