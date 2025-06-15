@@ -14,6 +14,7 @@ export class MainScriptService {
     private _filterValue!: HTMLParagraphElement;
     private _filterSliderInput!: HTMLInputElement;
     private _resetFilterBtn!: HTMLButtonElement;
+    private _mainContainer!: HTMLElement;
 
     public setHTMLControls = () => {
         this._htmlControls = {
@@ -39,22 +40,73 @@ export class MainScriptService {
         this._filterValue = helper.getNodeElements(".filter-info .value", "Single") as HTMLParagraphElement;
         this._filterSliderInput = helper.getNodeElements(".slider input", "Single") as HTMLInputElement;
         this._resetFilterBtn = helper.getNodeElements(".reset-filter", "Single") as HTMLButtonElement;
+        this._mainContainer = helper.getNodeElements(".container", "Single") as HTMLElement;
     }
 
     public setHTMLELementsEvents = () => {
         this._uploadButton.addEventListener("click", this.uploadButtonClick);
-        this._fileInput.addEventListener("change", this.loadImageAfterFileInput);
+        this._fileInput.addEventListener("change", this.afterFileInput);
+        this._imageElement.addEventListener("load", this.afterImageLoad)
     }
 
     private uploadButtonClick = ($event: MouseEvent) => {
+        $event.preventDefault();
         this._fileInput.click();
     }
 
-    private loadImageAfterFileInput = ($event: Event) => {
-        const selectedFiles = this._fileInput.files as FileList;
-        const selectedFile = selectedFiles[0] || undefined;
-        this._imageElement.src = URL.createObjectURL(selectedFile);
+    private afterFileInput = ($event: Event) => {
+        $event.preventDefault();
+
+        const file = this.returnAndValidateFile($event);
+        if (helper.isNullOrEmpty(file))
+            return;
+
+        this._htmlControls = {
+            ...this._htmlControls,
+            brightness: 100,
+            saturation: 100,
+            inversion: 0,
+            grayscale: 0,
+            flipHor: 1,
+            flipVer: 1,
+            rotate: 0
+        }
+
+        if (!helper.isNullOrEmpty(this._filterOptions) && this._filterOptions.length > 0)
+            this._filterOptions[0].click();
+
+        this.applyFilter();
+        this._imageElement.src = URL.createObjectURL(file!);
     }
+
+    private afterImageLoad = ($event: Event) => {
+        $event.preventDefault();
+        const file = this.returnAndValidateFile($event);
+        if (helper.isNullOrEmpty(file))
+            return;
+        const disableStatus = this._mainContainer.classList.contains("disable");
+        if (disableStatus)
+            this._mainContainer.classList.remove("disable");
+    }
+
+    private returnAndValidateFile = ($event: Event) => {
+        $event.preventDefault();
+        const selectedFiles = this._fileInput.files as FileList | undefined | null;
+        const selectedFile = selectedFiles![0];
+        if (helper.isNullOrEmpty(selectedFile))
+            return undefined;
+        else
+            return selectedFile;
+
+    }
+
+    private applyFilter = () => {
+        const { brightness, grayscale, inversion, saturation, rotate, flipHor, flipVer } = this._htmlControls;
+        this._imageElement.style.filter = `brightness(${brightness}%) saturate(${saturation}%) invert(${inversion}%) grayscale(${grayscale}%)`;
+        this._imageElement.style.transform = `rotate(${rotate}deg) scale(${flipHor}, ${flipVer})`;
+    }
+
+
 
 
 }
